@@ -1,0 +1,11 @@
+{
+  "Frame": {
+    "prefix": "frame",
+    "body": [
+      "\\begin{frame}{${1:Title}}",
+      "\t$0",
+      "\\end{frame}"
+    ],
+    "description": "Beamer frame environment"
+  }
+}
