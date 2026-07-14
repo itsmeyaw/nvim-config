@@ -108,6 +108,7 @@ return {
   },
   keys = {
     { "<leader>a", nil, desc = "AI/Claude Code" },
+    { "<leader>aD", "<cmd>ClaudeCode --dangerously-skip-permissions<cr>", desc = "Claude Code Skip Permission" },
     { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
     { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
     { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
