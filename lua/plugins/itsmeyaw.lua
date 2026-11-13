@@ -83,6 +83,40 @@ return {
     },
   },
   {
+    "sindrets/diffview.nvim",
+    cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewFileHistory", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewRefresh" },
+    config = function()
+      -- word-level inline diff (nvim 0.12+); replaces the default inline:char
+      vim.opt.diffopt:remove("inline:char")
+      vim.opt.diffopt:append("inline:word")
+      local function hl()
+        vim.api.nvim_set_hl(0, "DiffviewRemovedText", { fg = "#ffffff", bg = "#a31515", bold = true })
+        vim.api.nvim_set_hl(0, "DiffviewChangedText", { fg = "#ffffff", bg = "#b35900", bold = true })
+      end
+      hl()
+      vim.api.nvim_create_autocmd("ColorScheme", { callback = hl })
+      require("diffview").setup({
+        hooks = {
+          -- DiffText = word changed (both sides differ) -> orange.
+          -- DiffTextAdd = word with no counterpart in the other pane; in the old ("a") pane that means removed -> red.
+          diff_buf_win_enter = function(_, winid, ctx)
+            local winhl = vim.wo[winid].winhl:gsub("DiffText:[^,]*", "DiffText:DiffviewChangedText")
+            if ctx.symbol == "a" then
+              winhl = winhl .. ",DiffTextAdd:DiffviewRemovedText"
+            end
+            vim.wo[winid].winhl = winhl
+          end,
+        },
+      })
+    end,
+    keys = {
+      { "<leader>gv", "<cmd>DiffviewOpen<cr>", desc = "Diffview open" },
+      { "<leader>gH", "<cmd>DiffviewOpen HEAD<cr>", desc = "Diffview vs HEAD" },
+      { "<leader>gV", "<cmd>DiffviewClose<cr>", desc = "Diffview close" },
+      { "<leader>gF", "<cmd>DiffviewFileHistory %<cr>", desc = "Diffview file history" },
+    },
+  },
+  {
   "coder/claudecode.nvim",
   dependencies = { "folke/snacks.nvim" },
   config = true,
@@ -107,24 +141,45 @@ return {
     "ClaudeCodeCloseAllDiffs",
   },
   keys = {
-    { "<leader>a", nil, desc = "AI/Claude Code" },
-    { "<leader>aD", "<cmd>ClaudeCode --dangerously-skip-permissions<cr>", desc = "Claude Code Skip Permission" },
-    { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
-    { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
-    { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
-    { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
-    { "<leader>am", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select Claude model" },
-    { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add current buffer" },
-    { "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to Claude" },
+    { "<leader>ac", nil, desc = "AI/Claude Code" },
+    { "<leader>acD", "<cmd>ClaudeCode --dangerously-skip-permissions<cr>", desc = "Claude Code Skip Permission" },
+    { "<leader>acc", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
+    { "<leader>acf", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
+    { "<leader>acr", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
+    { "<leader>acC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
+    { "<leader>acm", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select Claude model" },
+    { "<leader>acb", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add current buffer" },
+    { "<leader>acs", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to Claude" },
     {
-      "<leader>as",
+      "<leader>acs",
       "<cmd>ClaudeCodeTreeAdd<cr>",
       desc = "Add file",
       ft = { "NvimTree", "neo-tree", "oil", "minifiles", "netrw", "snacks_picker_list" },
     },
     -- Diff management
-    { "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
-    { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
+    { "<leader>aca", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
+    { "<leader>acd", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
   },
+  {
+    "itsmeyaw/opencode.nvim",
+    lazy = false,
+    keys = {
+      { "<leader>ao", nil, desc = "AI/OpenCode" },
+      { "<leader>aot", "<cmd>OpenCode<cr>", desc = "Toggle OpenCode terminal" },
+      { "<leader>aoa", function() require("opencode").ask("@this: ") end, mode = { "n", "x" }, desc = "Ask OpenCode" },
+      { "<leader>aos", function() require("opencode").select() end, mode = { "n", "x" }, desc = "Select prompt" },
+      { "<leader>aoc", function() require("opencode").attach_context() end, mode = { "n", "x" }, desc = "Attach context (no submit)" },
+      { "<leader>aol", function() require("opencode").start_live_context() end, desc = "Start live context" },
+      { "<leader>aoL", function() require("opencode").stop_live_context() end, desc = "Stop live context" },
+    },
+    init = function()
+      vim.g.opencode_opts = {
+        live_context = {
+          enabled = true,
+          port = 0,
+        },
+      }
+    end,
+  }
 }
 }
